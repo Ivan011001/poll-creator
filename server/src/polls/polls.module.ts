@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PollsController } from './polls.controller';
-import { PollsService } from './polls.service';
 import { ConfigModule } from '@nestjs/config';
+import { PollsService } from './polls.service';
 
 @Module({
   imports: [ConfigModule],
