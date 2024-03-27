@@ -18,6 +18,11 @@ export class PollsController {
 
   @Post('/rejoin')
   async rejoin() {
-    return await this.pollsService.rejoin();
+    const mockFileds = {
+      pollID: '66994B',
+      userID: 'string',
+      name: 'sd',
+    };
+    return await this.pollsService.rejoin(mockFileds);
   }
 }
