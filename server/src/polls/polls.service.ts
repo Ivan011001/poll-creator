@@ -1,28 +1,43 @@
 import { Injectable } from '@nestjs/common';
-import { CreatePollDto, JoinPollDto } from './dtos';
 
 import { createPollID, createUserID } from 'src/utlis/ids';
+import { PollsRepository } from './polls.repository';
+import { CreatePollFields, JoinPollFields, RejoinPollField } from './types';
 
 @Injectable()
 export class PollsService {
-  async create(createPollDto: CreatePollDto) {
+  constructor(private readonly pollsRepository: PollsRepository) {}
+
+  async create(fileds: CreatePollFields) {
     const pollID = createPollID();
     const userID = createUserID();
 
-    return {
-      userID,
+    const createdPoll = await this.pollsRepository.createPoll({
+      ...fileds,
       pollID,
-      ...createPollDto,
+      userID,
+    });
+
+    return {
+      poll: createdPoll,
+      // access token
     };
   }
 
-  async join(joinPollDto: JoinPollDto) {
-    const userID = createUserID();
+  async join(fileds: JoinPollFields) {
+    // const userID = createUserID();
 
-    return { userID, ...joinPollDto };
+    const joinedPoll = await this.pollsRepository.getPoll(fileds.pollID);
+
+    return {
+      poll: joinedPoll,
+      // access token
+    };
   }
 
-  async rejoin() {
-    return 'In rejoin';
+  async rejoin(fileds: RejoinPollField) {
+    const joinedPoll = await this.pollsRepository.addParticipant(fileds);
+
+    return joinedPoll;
   }
 }
