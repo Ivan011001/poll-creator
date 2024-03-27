@@ -17,7 +17,6 @@ export interface RejoinPollField {
 }
 
 //repository interfaces
-
 export interface CreatePollData {
   pollID: string;
   topic: string;
@@ -30,3 +29,14 @@ export interface AddParticipantData {
   userID: string;
   name: string;
 }
+
+// guard types
+export interface AuthPayload {
+  user: {
+    sub: string;
+    pollID: string;
+    name: string;
+  };
+}
+
+export type RequestWithAuth = Request & AuthPayload;
