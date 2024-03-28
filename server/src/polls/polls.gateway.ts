@@ -7,7 +7,8 @@ import {
   OnGatewayDisconnect,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Socket, Namespace } from 'socket.io';
+import { Namespace } from 'socket.io';
+import { SocketWithAuth } from './types';
 
 @WebSocketGateway({
   namespace: 'polls',
@@ -24,15 +25,19 @@ export class PollsGateway
     this.logger.log('Websoket gateway');
   }
 
-  handleConnection(client: Socket) {
+  handleConnection(client: SocketWithAuth) {
     const sockets = this.io.sockets;
+
+    this.logger.debug(
+      `Socket connected with userID: ${client.user.userID}, pollID: ${client.user.pollID}, and name:${client.user.name}`,
+    );
 
     this.logger.log(`New connection is: ${client.id}`);
     this.logger.log(`Number of connected sockets: ${sockets.size}`);
 
     this.io.emit('hello', `from ${client.id}`);
   }
-  handleDisconnect(client: Socket) {
+  handleDisconnect(client: SocketWithAuth) {
     const sockets = this.io.sockets;
 
     this.logger.log(`Disconnection is: ${client.id}`);

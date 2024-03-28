@@ -23,6 +23,6 @@ export class PollsController {
   async rejoin(@Req() request: RequestWithAuth) {
     const { user } = request;
 
-    return await this.pollsService.rejoin({ ...user, userID: user.sub });
+    return await this.pollsService.rejoin({ ...user });
   }
 }

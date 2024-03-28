@@ -1,3 +1,6 @@
+import { Request } from 'express';
+import { Socket } from 'socket.io';
+
 //service interfaces
 export interface CreatePollFields {
   topic: string;
@@ -33,10 +36,12 @@ export interface AddParticipantData {
 // guard types
 export interface AuthPayload {
   user: {
-    sub: string;
+    userID: string;
     pollID: string;
     name: string;
   };
 }
 
 export type RequestWithAuth = Request & AuthPayload;
+
+export type SocketWithAuth = Socket & AuthPayload;
