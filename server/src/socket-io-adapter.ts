@@ -2,7 +2,9 @@ import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { INestApplicationContext } from '@nestjs/common';
 import { IoAdapter } from '@nestjs/platform-socket.io';
-import { ServerOptions } from 'socket.io';
+import { Server, ServerOptions } from 'socket.io';
+import { JwtService } from '@nestjs/jwt';
+import { SocketWithAuth } from './polls/types';
 
 export class SocketIOAdapter extends IoAdapter {
   private logger = new Logger(SocketIOAdapter.name);
@@ -34,6 +36,34 @@ export class SocketIOAdapter extends IoAdapter {
       cors,
     };
 
-    return super.createIOServer(port, optionsWithCORS);
+    const jwtService = this.app.get(JwtService);
+
+    const server: Server = super.createIOServer(port, optionsWithCORS);
+
+    server.of('polls').use(createTokenMiddleware(jwtService, this.logger));
+
+    return server;
   }
 }
+
+const createTokenMiddleware =
+  (jwtService: JwtService, logger: Logger) =>
+  (socket: SocketWithAuth, next) => {
+    const token =
+      socket.handshake.auth.token || socket.handshake.headers['token'];
+
+    logger.debug(`Validating auth token before connetction: ${token}`);
+
+    try {
+      const resp = jwtService.verify(token);
+
+      socket.user = {
+        userID: resp.sub,
+        pollID: resp.pollID,
+        name: resp.name,
+      };
+      next();
+    } catch {
+      next(new Error('Forbidden!'));
+    }
+  };
