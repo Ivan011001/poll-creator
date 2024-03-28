@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { BadRequestException, Logger, UseFilters } from '@nestjs/common';
 import { PollsService } from './polls.service';
 import {
   WebSocketGateway,
@@ -6,10 +6,13 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   WebSocketServer,
+  SubscribeMessage,
 } from '@nestjs/websockets';
 import { Namespace } from 'socket.io';
 import { SocketWithAuth } from './types';
+import { WsCatchAllException } from 'src/exceptions/ws-catch-all.filter';
 
+@UseFilters(new WsCatchAllException())
 @WebSocketGateway({
   namespace: 'polls',
 })
@@ -37,10 +40,16 @@ export class PollsGateway
 
     this.io.emit('hello', `from ${client.id}`);
   }
+
   handleDisconnect(client: SocketWithAuth) {
     const sockets = this.io.sockets;
 
     this.logger.log(`Disconnection is: ${client.id}`);
     this.logger.log(`Number of connected sockets: ${sockets.size}`);
+  }
+
+  @SubscribeMessage('test')
+  async test() {
+    throw new BadRequestException('Invalid empty data :)');
   }
 }
