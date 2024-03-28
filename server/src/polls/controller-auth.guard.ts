@@ -6,6 +6,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { RequestWithAuth } from './types';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -13,7 +14,7 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
-      const request = context.switchToHttp().getRequest();
+      const request: RequestWithAuth = context.switchToHttp().getRequest();
 
       const { authorization } = request.headers;
       if (!authorization || authorization.trim() === '') {
@@ -22,7 +23,11 @@ export class AuthGuard implements CanActivate {
       const authToken = authorization.replace(/bearer/gim, '').trim();
       const resp = await this.jwtService.verify(authToken);
 
-      request.user = resp;
+      request.user = {
+        userID: resp.sub,
+        pollID: resp.pollID,
+        name: resp.name,
+      };
       return true;
     } catch {
       throw new ForbiddenException('Invalid token!');
