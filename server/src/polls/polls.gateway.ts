@@ -1,4 +1,4 @@
-import { BadRequestException, Logger, UseFilters } from '@nestjs/common';
+import { Logger, UseFilters, UseGuards } from '@nestjs/common';
 import { PollsService } from './polls.service';
 import {
   WebSocketGateway,
@@ -7,10 +7,13 @@ import {
   OnGatewayDisconnect,
   WebSocketServer,
   SubscribeMessage,
+  MessageBody,
+  ConnectedSocket,
 } from '@nestjs/websockets';
 import { Namespace } from 'socket.io';
 import { SocketWithAuth } from './types';
 import { WsCatchAllException } from 'src/exceptions/ws-catch-all.filter';
+import { GatewayAdminGuard } from './gateway-admin.guard';
 
 @UseFilters(new WsCatchAllException())
 @WebSocketGateway({
@@ -60,8 +63,16 @@ export class PollsGateway
     }
   }
 
-  @SubscribeMessage('test')
-  async test() {
-    throw new BadRequestException('Invalid empty data :)');
+  @UseGuards(GatewayAdminGuard)
+  @SubscribeMessage('remove_participant')
+  async removeParticipant(
+    @MessageBody('id') id: string,
+    @ConnectedSocket() client: SocketWithAuth,
+  ) {
+    const updatedPoll = await this.pollsService.remove(client.user.pollID, id);
+
+    if (updatedPoll) {
+      this.io.to(client.id).emit('poll_updated', updatedPoll);
+    }
   }
 }
