@@ -19,6 +19,12 @@ export interface RejoinPollField {
   name: string;
 }
 
+export interface AddParticipantFileds {
+  pollID: string;
+  userID: string;
+  name: string;
+}
+
 //repository interfaces
 export interface CreatePollData {
   pollID: string;
@@ -31,6 +37,11 @@ export interface AddParticipantData {
   pollID: string;
   userID: string;
   name: string;
+}
+
+export interface RemoveParticipantData {
+  pollID: string;
+  userID: string;
 }
 
 // guard types
