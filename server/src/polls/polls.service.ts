@@ -71,7 +71,7 @@ export class PollsService {
   }
 
   async add(fields: AddParticipantFileds) {
-    this.pollsRepository.addParticipant(fields);
+    return this.pollsRepository.addParticipant(fields);
   }
 
   async remove(pollID: string, userID: string): Promise<Poll | void> {

@@ -28,24 +28,36 @@ export class PollsGateway
     this.logger.log('Websoket gateway');
   }
 
-  handleConnection(client: SocketWithAuth) {
-    const sockets = this.io.sockets;
+  async handleConnection(client: SocketWithAuth) {
+    // const sockets = this.io.sockets;
 
-    this.logger.debug(
-      `Socket connected with userID: ${client.user.userID}, pollID: ${client.user.pollID}, and name:${client.user.name}`,
-    );
+    const roomName = client.user.pollID;
+    await client.join(roomName);
 
-    this.logger.log(`New connection is: ${client.id}`);
-    this.logger.log(`Number of connected sockets: ${sockets.size}`);
+    // const connectedClients = this.io.adapter.rooms?.get(roomName)?.size ?? 0;
 
-    this.io.emit('hello', `from ${client.id}`);
+    const updatedPoll = await this.pollsService.add({
+      pollID: client.user.pollID,
+      userID: client.user.userID,
+      name: client.user.name,
+    });
+
+    this.io.to(roomName).emit('poll_updated', updatedPoll);
   }
 
-  handleDisconnect(client: SocketWithAuth) {
-    const sockets = this.io.sockets;
+  async handleDisconnect(client: SocketWithAuth) {
+    // const sockets = this.io.sockets;
 
-    this.logger.log(`Disconnection is: ${client.id}`);
-    this.logger.log(`Number of connected sockets: ${sockets.size}`);
+    const { pollID, userID } = client.user;
+
+    const updatedPoll = await this.pollsService.remove(pollID, userID);
+
+    const roomName = client.user.pollID;
+    // const connectedClients = this.io.adapter.rooms?.get(roomName)?.size ?? 0;
+
+    if (updatedPoll) {
+      this.io.to(roomName).emit('poll_updated', updatedPoll);
+    }
   }
 
   @SubscribeMessage('test')

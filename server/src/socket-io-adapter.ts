@@ -52,8 +52,6 @@ const createTokenMiddleware =
     const token =
       socket.handshake.auth.token || socket.handshake.headers['token'];
 
-    logger.debug(`Validating auth token before connetction: ${token}`);
-
     try {
       const resp = jwtService.verify(token);
 
