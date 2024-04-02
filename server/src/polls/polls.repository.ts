@@ -9,7 +9,7 @@ import {
   AddParticipantRankingsData,
   CreatePollData,
 } from './types';
-import { Poll } from 'shared';
+import { Poll, Results } from 'shared';
 
 @Injectable()
 export class PollsRepository {
@@ -36,6 +36,7 @@ export class PollsRepository {
       participants: {},
       nominations: {},
       rankings: {},
+      results: [],
       adminID: userID,
       hasStarted: false,
     };
@@ -195,6 +196,36 @@ export class PollsRepository {
       return poll;
     } catch {
       throw new InternalServerErrorException('Failed to add ranking');
+    }
+  }
+
+  async addResults(pollID: string, results: Results): Promise<Poll> {
+    const key = `polls:${pollID}`;
+    const resultsPath = '.results';
+
+    try {
+      await this.redisClient.call(
+        'JSON.SET',
+        key,
+        resultsPath,
+        JSON.stringify(results),
+      );
+
+      const poll = await this.getPoll(pollID);
+
+      return poll;
+    } catch {
+      throw new InternalServerErrorException('Failed to add results');
+    }
+  }
+
+  async deletePoll(pollID: string) {
+    const key = `polls:${pollID}`;
+
+    try {
+      await this.redisClient.call('JSON.DEL', key);
+    } catch {
+      throw new InternalServerErrorException('Failed to delete poll');
     }
   }
 }

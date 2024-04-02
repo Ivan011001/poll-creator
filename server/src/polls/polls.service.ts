@@ -11,6 +11,7 @@ import {
 } from './types';
 import { JwtService } from '@nestjs/jwt';
 import { Poll } from 'shared';
+import { getResults } from 'src/helpers/getResults';
 
 @Injectable()
 export class PollsService {
@@ -138,5 +139,18 @@ export class PollsService {
       userID,
       rankings,
     });
+  }
+
+  async computeResults(pollID: string): Promise<Poll> {
+    const poll = await this.pollsRepository.getPoll(pollID);
+    const { rankings, nominations, votesPerVoter } = poll;
+
+    const results = getResults(rankings, nominations, votesPerVoter);
+
+    return await this.pollsRepository.addResults(pollID, results);
+  }
+
+  async cancelPoll(pollID: string): Promise<void> {
+    return await this.pollsRepository.deletePoll(pollID);
   }
 }

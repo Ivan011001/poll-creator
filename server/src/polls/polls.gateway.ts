@@ -129,9 +129,9 @@ export class PollsGateway
   @SubscribeMessage('submit_rankings')
   async submitRankings(
     @MessageBody('rankings') rankings: string[],
-    @ConnectedSocket() socket: SocketWithAuth,
+    @ConnectedSocket() client: SocketWithAuth,
   ) {
-    const { pollID, userID } = socket.user;
+    const { pollID, userID } = client.user;
 
     const updatedPoll = await this.pollsService.submitRankings({
       pollID,
@@ -140,5 +140,25 @@ export class PollsGateway
     });
 
     this.io.to(pollID).emit('poll_updated', updatedPoll);
+  }
+
+  @UseGuards(GatewayAdminGuard)
+  @SubscribeMessage('close_poll')
+  async closePoll(@ConnectedSocket() client: SocketWithAuth) {
+    const { pollID } = client.user;
+
+    const updatedPoll = await this.pollsService.computeResults(pollID);
+
+    this.io.to(pollID).emit('poll_updated', updatedPoll);
+  }
+
+  @UseGuards(GatewayAdminGuard)
+  @SubscribeMessage('cancel_poll')
+  async cancelPoll(@ConnectedSocket() client: SocketWithAuth) {
+    const { pollID } = client.user;
+
+    await this.pollsService.cancelPoll(pollID);
+
+    this.io.to(pollID).emit('poll_cancelled');
   }
 }
