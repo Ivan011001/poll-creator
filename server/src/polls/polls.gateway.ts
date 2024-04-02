@@ -40,12 +40,8 @@ export class PollsGateway
   }
 
   async handleConnection(client: SocketWithAuth) {
-    // const sockets = this.io.sockets;
-
     const roomName = client.user.pollID;
     await client.join(roomName);
-
-    // const connectedClients = this.io.adapter.rooms?.get(roomName)?.size ?? 0;
 
     const updatedPoll = await this.pollsService.add({
       pollID: client.user.pollID,
@@ -57,14 +53,11 @@ export class PollsGateway
   }
 
   async handleDisconnect(client: SocketWithAuth) {
-    // const sockets = this.io.sockets;
-
     const { pollID, userID } = client.user;
 
     const updatedPoll = await this.pollsService.remove(pollID, userID);
 
     const roomName = client.user.pollID;
-    // const connectedClients = this.io.adapter.rooms?.get(roomName)?.size ?? 0;
 
     if (updatedPoll) {
       this.io.to(roomName).emit('poll_updated', updatedPoll);

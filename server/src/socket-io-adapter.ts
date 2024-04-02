@@ -1,4 +1,3 @@
-import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { INestApplicationContext } from '@nestjs/common';
 import { IoAdapter } from '@nestjs/platform-socket.io';
@@ -7,8 +6,6 @@ import { JwtService } from '@nestjs/jwt';
 import { SocketWithAuth } from './polls/types';
 
 export class SocketIOAdapter extends IoAdapter {
-  private logger = new Logger(SocketIOAdapter.name);
-
   constructor(
     private readonly app: INestApplicationContext,
     private readonly configService: ConfigService,
@@ -26,11 +23,6 @@ export class SocketIOAdapter extends IoAdapter {
       ],
     };
 
-    this.logger.log(
-      'Configuring SocketIO server with custom CORS options',
-      cors,
-    );
-
     const optionsWithCORS: ServerOptions = {
       ...options,
       cors,
@@ -40,15 +32,14 @@ export class SocketIOAdapter extends IoAdapter {
 
     const server: Server = super.createIOServer(port, optionsWithCORS);
 
-    server.of('polls').use(createTokenMiddleware(jwtService, this.logger));
+    server.of('polls').use(createTokenMiddleware(jwtService));
 
     return server;
   }
 }
 
 const createTokenMiddleware =
-  (jwtService: JwtService, logger: Logger) =>
-  (socket: SocketWithAuth, next) => {
+  (jwtService: JwtService) => (socket: SocketWithAuth, next) => {
     const token =
       socket.handshake.auth.token || socket.handshake.headers['token'];
 
