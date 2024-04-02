@@ -32,6 +32,12 @@ export interface AddNominationFields {
   text: string;
 }
 
+export interface SubmitRankingsFields {
+  pollID: string;
+  userID: string;
+  rankings: string[];
+}
+
 //repository interfaces
 export interface CreatePollData {
   pollID: string;
@@ -55,6 +61,12 @@ export interface AddNominationData {
   pollID: string;
   nominationID: string;
   nomination: Nomination;
+}
+
+export interface AddParticipantRankingsData {
+  pollID: string;
+  userID: string;
+  rankings: string[];
 }
 
 // guard types

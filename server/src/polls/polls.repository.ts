@@ -3,7 +3,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
 import { IORedisKey } from 'src/redis.module';
-import { AddNominationData, AddParticipantData, CreatePollData } from './types';
+import {
+  AddNominationData,
+  AddParticipantData,
+  AddParticipantRankingsData,
+  CreatePollData,
+} from './types';
 import { Poll } from 'shared';
 
 @Injectable()
@@ -30,6 +35,7 @@ export class PollsRepository {
       votesPerVoter,
       participants: {},
       nominations: {},
+      rankings: {},
       adminID: userID,
       hasStarted: false,
     };
@@ -145,6 +151,50 @@ export class PollsRepository {
       return poll;
     } catch {
       throw new InternalServerErrorException('Failed to remove nomination');
+    }
+  }
+
+  async startPoll(pollID: string): Promise<Poll> {
+    const key = `polls:${pollID}`;
+    const hasStaredPath = '.hasStarted';
+
+    try {
+      await this.redisClient.call(
+        'JSON.SET',
+        key,
+        hasStaredPath,
+        JSON.stringify(true),
+      );
+
+      const poll = await this.getPoll(pollID);
+
+      return poll;
+    } catch {
+      throw new InternalServerErrorException('Failed to start poll');
+    }
+  }
+
+  async addParticipantRankings({
+    userID,
+    pollID,
+    rankings,
+  }: AddParticipantRankingsData): Promise<Poll> {
+    const key = `polls:${pollID}`;
+    const rankingsPath = `.rankings.${userID}`;
+
+    try {
+      await this.redisClient.call(
+        'JSON.SET',
+        key,
+        rankingsPath,
+        JSON.stringify(rankings),
+      );
+
+      const poll = await this.getPoll(pollID);
+
+      return poll;
+    } catch {
+      throw new InternalServerErrorException('Failed to add ranking');
     }
   }
 }

@@ -1,4 +1,10 @@
-import { Logger, UseFilters, UseGuards } from '@nestjs/common';
+import {
+  Logger,
+  UseFilters,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { PollsService } from './polls.service';
 import {
   WebSocketGateway,
@@ -16,6 +22,7 @@ import { WsCatchAllException } from 'src/exceptions/ws-catch-all.filter';
 import { GatewayAdminGuard } from './gateway-admin.guard';
 import { NominationDto } from './dtos';
 
+@UsePipes(new ValidationPipe())
 @UseFilters(new WsCatchAllException())
 @WebSocketGateway({
   namespace: 'polls',
@@ -105,6 +112,32 @@ export class PollsGateway
       pollID,
       nominationID,
     );
+
+    this.io.to(pollID).emit('poll_updated', updatedPoll);
+  }
+
+  @UseGuards(GatewayAdminGuard)
+  @SubscribeMessage('start_vote')
+  async startPoll(@ConnectedSocket() client: SocketWithAuth) {
+    const { pollID } = client.user;
+
+    const updatedPoll = await this.pollsService.startPoll(pollID);
+
+    this.io.to(pollID).emit('poll_updated', updatedPoll);
+  }
+
+  @SubscribeMessage('submit_rankings')
+  async submitRankings(
+    @MessageBody('rankings') rankings: string[],
+    @ConnectedSocket() socket: SocketWithAuth,
+  ) {
+    const { pollID, userID } = socket.user;
+
+    const updatedPoll = await this.pollsService.submitRankings({
+      pollID,
+      userID,
+      rankings,
+    });
 
     this.io.to(pollID).emit('poll_updated', updatedPoll);
   }
