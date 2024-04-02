@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { createPollID, createUserID } from 'src/utlis/ids';
+import { createPollID, createUserID, createNominationID } from 'src/utlis/ids';
 import { PollsRepository } from './polls.repository';
 import {
+  AddNominationFields,
   AddParticipantFileds,
   CreatePollFields,
   JoinPollFields,
@@ -89,7 +90,28 @@ export class PollsService {
     return updatedPoll;
   }
 
-  async get(pollID): Promise<Poll> {
+  async get(pollID: string): Promise<Poll> {
     return this.pollsRepository.getPoll(pollID);
+  }
+
+  async addNomination({
+    pollID,
+    userID,
+    text,
+  }: AddNominationFields): Promise<Poll> {
+    const nominationID = createNominationID();
+
+    return await this.pollsRepository.addNomination({
+      pollID,
+      nominationID,
+      nomination: {
+        userID,
+        text,
+      },
+    });
+  }
+
+  async removeNomination(pollID: string, nominationID: string): Promise<Poll> {
+    return await this.pollsRepository.removeNomination(pollID, nominationID);
   }
 }

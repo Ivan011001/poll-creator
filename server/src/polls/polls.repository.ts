@@ -3,7 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
 import { IORedisKey } from 'src/redis.module';
-import { AddParticipantData, CreatePollData } from './types';
+import { AddNominationData, AddParticipantData, CreatePollData } from './types';
 import { Poll } from 'shared';
 
 @Injectable()
@@ -29,6 +29,7 @@ export class PollsRepository {
       topic,
       votesPerVoter,
       participants: {},
+      nominations: {},
       adminID: userID,
       hasStarted: false,
     };
@@ -89,9 +90,7 @@ export class PollsRepository {
 
       return poll;
     } catch {
-      throw new InternalServerErrorException(
-        `Failed to add a participant with userID/name: ${userID}/${name} to pollID: ${pollID}`,
-      );
+      throw new InternalServerErrorException('Failed to add participant');
     }
   }
 
@@ -107,6 +106,45 @@ export class PollsRepository {
       return poll;
     } catch {
       throw new InternalServerErrorException('Failed to remove participant');
+    }
+  }
+
+  async addNomination({
+    pollID,
+    nominationID,
+    nomination,
+  }: AddNominationData): Promise<Poll> {
+    const key = `polls:${pollID}`;
+    const nominationPath = `.nominations.${nominationID}`;
+
+    try {
+      await this.redisClient.call(
+        'JSON.SET',
+        key,
+        nominationPath,
+        JSON.stringify(nomination),
+      );
+
+      const poll = await this.getPoll(pollID);
+
+      return poll;
+    } catch {
+      throw new InternalServerErrorException('Failed to add nomination');
+    }
+  }
+
+  async removeNomination(pollID: string, nominationID: string): Promise<Poll> {
+    const key = `polls:${pollID}`;
+    const nominationPath = `.nominations.${nominationID}`;
+
+    try {
+      await this.redisClient.call('JSON.DEL', key, nominationPath);
+
+      const poll = await this.getPoll(pollID);
+
+      return poll;
+    } catch {
+      throw new InternalServerErrorException('Failed to remove nomination');
     }
   }
 }
