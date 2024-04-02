@@ -125,4 +125,20 @@ export class PollsGateway
 
     this.io.to(pollID).emit('poll_updated', updatedPoll);
   }
+
+  @SubscribeMessage('sumbit_rankings')
+  async submitRankings(
+    @MessageBody('rankings') rankings: string[],
+    @ConnectedSocket() socket: SocketWithAuth,
+  ) {
+    const { pollID, userID } = socket.user;
+
+    const updatedPoll = await this.pollsService.submitRankings({
+      pollID,
+      userID,
+      rankings,
+    });
+
+    this.io.to(pollID).emit('poll_updated', updatedPoll);
+  }
 }
