@@ -1,4 +1,10 @@
-import { Logger, UseFilters, UseGuards } from '@nestjs/common';
+import {
+  Logger,
+  UseFilters,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { PollsService } from './polls.service';
 import {
   WebSocketGateway,
@@ -16,6 +22,7 @@ import { WsCatchAllException } from 'src/exceptions/ws-catch-all.filter';
 import { GatewayAdminGuard } from './gateway-admin.guard';
 import { NominationDto } from './dtos';
 
+@UsePipes(new ValidationPipe())
 @UseFilters(new WsCatchAllException())
 @WebSocketGateway({
   namespace: 'polls',
