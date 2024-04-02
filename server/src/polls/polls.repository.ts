@@ -1,5 +1,5 @@
 import { Inject, InternalServerErrorException } from '@nestjs/common';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
 import { IORedisKey } from 'src/redis.module';
@@ -14,7 +14,6 @@ import { Poll, Results } from 'shared';
 @Injectable()
 export class PollsRepository {
   private readonly ttl: string;
-  private readonly logger = new Logger(PollsRepository.name);
 
   constructor(
     configService: ConfigService,
@@ -41,10 +40,6 @@ export class PollsRepository {
       hasStarted: false,
     };
 
-    this.logger.log(
-      `Creating new poll ${JSON.stringify(initialPoll, null, 2)} with TTL ${this.ttl}`,
-    );
-
     const key = `polls:${pollID}`;
 
     try {
@@ -66,10 +61,6 @@ export class PollsRepository {
 
     try {
       const poll = await this.redisClient.call('JSON.GET', key, '.');
-
-      // if (currentPoll.hasStarted) {
-      //   throw new BadRequestException('Poll has already started');
-      // }
 
       return JSON.parse(poll as string);
     } catch {
