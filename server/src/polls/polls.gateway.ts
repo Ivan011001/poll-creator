@@ -115,4 +115,14 @@ export class PollsGateway
 
     this.io.to(pollID).emit('poll_updated', updatedPoll);
   }
+
+  @UseGuards(GatewayAdminGuard)
+  @SubscribeMessage('start_vote')
+  async startPoll(@ConnectedSocket() client: SocketWithAuth) {
+    const { pollID } = client.user;
+
+    const updatedPoll = await this.pollsService.startPoll(pollID);
+
+    this.io.to(pollID).emit('poll_updated', updatedPoll);
+  }
 }

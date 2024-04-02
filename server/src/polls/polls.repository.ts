@@ -148,4 +148,19 @@ export class PollsRepository {
       throw new InternalServerErrorException('Failed to remove nomination');
     }
   }
+
+  async startPoll(pollID: string): Promise<Poll> {
+    const key = `polls:${pollID}`;
+    const hasStaredPath = '.hasStarted';
+
+    try {
+      await this.redisClient.call('JSON.SET', key, hasStaredPath);
+
+      const poll = await this.getPoll(pollID);
+
+      return poll;
+    } catch {
+      throw new InternalServerErrorException('Failed to start poll');
+    }
+  }
 }
