@@ -1,5 +1,6 @@
 import { Request } from 'express';
 import { Socket } from 'socket.io';
+import { Nomination } from 'shared';
 
 //service interfaces
 export interface CreatePollFields {
@@ -25,6 +26,12 @@ export interface AddParticipantFileds {
   name: string;
 }
 
+export interface AddNominationFields {
+  pollID: string;
+  userID: string;
+  text: string;
+}
+
 //repository interfaces
 export interface CreatePollData {
   pollID: string;
@@ -42,6 +49,12 @@ export interface AddParticipantData {
 export interface RemoveParticipantData {
   pollID: string;
   userID: string;
+}
+
+export interface AddNominationData {
+  pollID: string;
+  nominationID: string;
+  nomination: Nomination;
 }
 
 // guard types

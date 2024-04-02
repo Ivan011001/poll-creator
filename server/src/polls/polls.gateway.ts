@@ -14,6 +14,7 @@ import { Namespace } from 'socket.io';
 import { SocketWithAuth } from './types';
 import { WsCatchAllException } from 'src/exceptions/ws-catch-all.filter';
 import { GatewayAdminGuard } from './gateway-admin.guard';
+import { NominationDto } from './dtos';
 
 @UseFilters(new WsCatchAllException())
 @WebSocketGateway({
@@ -74,5 +75,37 @@ export class PollsGateway
     if (updatedPoll) {
       this.io.to(client.id).emit('poll_updated', updatedPoll);
     }
+  }
+
+  @SubscribeMessage('nominate')
+  async nominate(
+    @MessageBody() nomination: NominationDto,
+    @ConnectedSocket() client: SocketWithAuth,
+  ): Promise<void> {
+    const { pollID, userID } = client.user;
+
+    const updatedPoll = await this.pollsService.addNomination({
+      pollID,
+      userID,
+      text: nomination.text,
+    });
+
+    this.io.to(pollID).emit('poll_updated', updatedPoll);
+  }
+
+  @UseGuards(GatewayAdminGuard)
+  @SubscribeMessage('remove_nomination')
+  async removeNomination(
+    @MessageBody('id') nominationID: string,
+    @ConnectedSocket() client: SocketWithAuth,
+  ): Promise<void> {
+    const { pollID } = client.user;
+
+    const updatedPoll = await this.pollsService.removeNomination(
+      pollID,
+      nominationID,
+    );
+
+    this.io.to(pollID).emit('poll_updated', updatedPoll);
   }
 }
