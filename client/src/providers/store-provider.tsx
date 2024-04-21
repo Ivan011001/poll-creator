@@ -22,12 +22,12 @@ export default function StoreProvider({
 
   return (
     <Provider store={storeRef.current}>
-      <PersistGate
+      {/* <PersistGate
         persistor={persistStore(storeRef.current)}
         loading={<Loader />}
-      >
-        {children}
-      </PersistGate>
+      > */}
+      {children}
+      {/* </PersistGate> */}
     </Provider>
   );
 }
