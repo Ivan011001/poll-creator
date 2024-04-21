@@ -1,19 +1,23 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-import { createPollThunk } from "./polls-operations";
+import { createPollThunk, joinPollThunk } from "./polls-operations";
+
+import { Poll } from "shared/poll-types";
 
 interface PollsSlice {
-  name: string;
   token: string;
+  poll: Poll | null;
+  isAdmin?: boolean;
   isLoading: boolean;
-  error: string | unknown;
+  error: null | unknown;
 }
 
 const initialState: PollsSlice = {
-  name: "",
   token: "",
+  poll: null,
+  isAdmin: false,
   isLoading: false,
-  error: "",
+  error: null,
 };
 
 const pollsSlice = createSlice({
@@ -25,13 +29,37 @@ const pollsSlice = createSlice({
       .addCase(createPollThunk.pending, (state, action) => {
         state.isLoading = true;
         state.error = "";
+        state.isAdmin = false;
       })
       .addCase(createPollThunk.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.error = null;
+        state.token = action.payload.data.accessToken;
+        state.poll = action.payload.data.poll;
+        state.isAdmin = true;
       })
-      .addCase(createPollThunk.rejected, (state, action) => {
-        state.error = action.payload;
+      .addCase(createPollThunk.rejected, (state, action: any) => {
+        state.error = action.payload.error;
         state.isLoading = false;
+        state.isAdmin = false;
+      })
+
+      .addCase(joinPollThunk.pending, (state, action) => {
+        state.isLoading = true;
+        state.error = "";
+        state.isAdmin = false;
+      })
+      .addCase(joinPollThunk.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.error = null;
+        state.token = action.payload.data.accessToken;
+        state.poll = action.payload.data.poll;
+        state.isAdmin = false;
+      })
+      .addCase(joinPollThunk.rejected, (state, action: any) => {
+        state.error = action.payload.error;
+        state.isLoading = false;
+        state.isAdmin = false;
       });
   },
 });
