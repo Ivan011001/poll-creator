@@ -29,7 +29,7 @@ export const makeRequest = async <T>(
       return { data: {}, error: responseJSON as ApiError };
     }
 
-    return { data: response as T };
+    return { data: responseJSON as T };
   } catch (e) {
     const error =
       e instanceof Error

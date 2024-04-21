@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useAppDispatch } from "@/redux/hooks";
 
@@ -27,7 +28,10 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 const CreatePollForm = () => {
+  const { replace } = useRouter();
+
   const [isPending, startTransition] = useTransition();
+
   const dispatch = useAppDispatch();
 
   const form = useForm<z.infer<typeof createPollSchema>>({
@@ -42,8 +46,14 @@ const CreatePollForm = () => {
   const onSubmit = (values: z.infer<typeof createPollSchema>) => {
     startTransition(() => {
       dispatch(createPollThunk(values))
-        .then(() => {
-          toast.success("Poll was created");
+        .then((data: any) => {
+          if (data.payload.error) {
+            toast.error("Couldn't create the poll");
+            return;
+          }
+
+          toast.success("You have created the poll");
+          replace("/waiting");
         })
         .catch(() => {
           toast.error("Something went wrong");
