@@ -11,7 +11,30 @@ import {
   REGISTER,
   persistReducer,
 } from "redux-persist";
-import storage from "redux-persist/lib/storage";
+import createWebStorage from "redux-persist/lib/storage/createWebStorage";
+import { WebStorage } from "redux-persist/lib/types";
+
+export function createPersistStorage(): WebStorage {
+  const isServer = typeof window === "undefined";
+
+  if (isServer) {
+    return {
+      getItem() {
+        return Promise.resolve(null);
+      },
+      setItem() {
+        return Promise.resolve();
+      },
+      removeItem() {
+        return Promise.resolve();
+      },
+    };
+  }
+
+  return createWebStorage("local");
+}
+
+const storage = createPersistStorage();
 
 const persistConfig = {
   key: "counter",
