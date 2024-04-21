@@ -6,6 +6,8 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { joinPollSchema } from "@/schemas";
 
+import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -26,7 +28,6 @@ const JoinPollForm = () => {
   });
 
   const onSubmit = (values: z.infer<typeof joinPollSchema>) => {
-    console.log(values);
     form.reset();
   };
 
@@ -49,9 +50,15 @@ const JoinPollForm = () => {
           )}
         />
 
-        <Button type="submit" size="lg">
-          Join
-        </Button>
+        <div className="flex justify-between">
+          <Button type="submit" size="lg">
+            Join
+          </Button>
+
+          <Button type="submit" size="lg" variant="outline" asChild>
+            <Link href="/">Start Over</Link>
+          </Button>
+        </div>
       </form>
     </Form>
   );

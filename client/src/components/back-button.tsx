@@ -1,7 +1,5 @@
 import Link from "next/link";
 
-import { ChevronsLeft } from "lucide-react";
-
 interface BackButtonProps {
   href: string;
   label: string;

@@ -3,7 +3,7 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 
 import StoreProvider from "@/providers/store-provider";
-import Transition from "@/components/ui/transition";
+import { Toaster } from "sonner";
 
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600"] });
 
@@ -20,6 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${poppins.className} container`}>
+        <Toaster />
         <StoreProvider>{children}</StoreProvider>
       </body>
     </html>

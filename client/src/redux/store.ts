@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 
-import { authReducer } from "./auth/auth-slice";
+import { pollsReducer } from "./polls/polls-slice";
 
 // import {
 //   FLUSH,
@@ -46,7 +46,7 @@ import { authReducer } from "./auth/auth-slice";
 export const makeStore = () => {
   return configureStore({
     reducer: {
-      auth: authReducer,
+      polls: pollsReducer,
     },
     // middleware: (getDefaultMiddleware) =>
     //   getDefaultMiddleware({
